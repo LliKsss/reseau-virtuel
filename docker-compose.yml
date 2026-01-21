@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  firewall:
+    image: wallarm/api-firewall
+    container_name: vnf-firewall
+    environment:
+      - APIFW_API_SPECS=/etc/wallarm/openapi.yaml
+      - APIFW_URL=http://0.0.0.0:8080
+      - APIFW_SERVER_URL=http://vnf-web:80
+      - APIFW_REQUEST_VALIDATION=BLOCK
+      - APIFW_RESPONSE_VALIDATION=LOG_ONLY
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./openapi.yaml:/etc/wallarm/openapi.yaml:ro
+    depends_on:
+      - webserver
+    networks:
+      - net-chain
+  loadbalancer:
+    image: haproxytech/haproxy-alpine
+    container_name: vnf-lb
+    ports:
+      - "9090:80"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      firewall:
+        condition: service_started
+    networks:
+      - net-chain
+  webserver:
+    image: nginx
+    container_name: vnf-web
+    ports:
+      - "8081:80"
+    networks:
+      - net-chain
+networks:
+  net-chain:
+    driver: bridge

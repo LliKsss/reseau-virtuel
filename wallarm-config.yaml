@@ -1,0 +1,6 @@
+server:
+  url: http://vnf-web:80
+  request_validation: BLOCK
+  response_validation: BLOCK
+  custom_block_status_code: 403
+  add_validation_status_header: true
