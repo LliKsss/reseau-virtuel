@@ -1,0 +1,26 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+topology_template:
+  node_templates:
+    Firewall:
+      type: tosca.nodes.Container.Application
+      properties:
+        image: "wallarm/api-firewall"
+
+    LoadBalancer:
+      type: tosca.nodes.Container.Application
+      properties:
+        image: "haproxytech/haproxy-alpine"
+      requirements:
+        - dependency: 
+            node: Firewall
+            relationship: tosca.relationships.DependsOn
+
+    WebServer:
+      type: tosca.nodes.Container.Application
+      properties:
+        image: "nginx"
+      requirements:
+        - dependency: 
+            node: LoadBalancer
+            relationship: tosca.relationships.DependsOn
